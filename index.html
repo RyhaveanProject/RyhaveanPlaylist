@@ -3,205 +3,456 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Ryhavean · Play List</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Syne:wght@800&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#121212" />
+    <title>Ryhavean · Spotify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; overflow: hidden; background: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        .universe-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(170deg, #000 0%, #050510 100%); }
-        .app { position: relative; z-index: 3; width: 100%; height: 100vh; display: flex; flex-direction: column; }
-
-        /* === TOP BAR === */
-        .top-bar { display: flex; align-items: center; padding: 15px 25px; z-index: 10; }
-        .profile-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); margin-right: 12px; }
-        .creator-tag { font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: rgba(255,255,255,0.4); }
-
-        /* === MAIN CONTENT === */
-        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        
-        .glass-box { 
-            width: 300px; height: 300px; border-radius: 30px; overflow: hidden; 
-            position: relative; background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .glass-album { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-
-        .lyrics-overlay {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.3); padding: 20px; text-align: center;
-        }
-        #liveLyrics {
-            font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400;
-            color: rgba(255,255,255,0.9); text-transform: lowercase;
-            line-height: 1.4; transition: 0.3s;
+        :root {
+            --spotify-green: #1DB954;
+            --spotify-black: #121212;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B3B3B3;
+            --text-tertiary: rgba(255,255,255,0.7);
         }
 
-        .song-info { margin-top: 25px; text-align: center; }
-        /* "Mahnı" yerinə "List" yazıldı */
-        .song-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -1px; }
-        
-        /* PLAYER CONTROLS */
-        .controls { width: 100%; max-width: 350px; margin-top: 20px; }
-        .progress-rail { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; }
-        .progress-fill { height: 100%; width: 0%; background: #fff; border-radius: 2px; transition: width 0.1s linear; }
-        
-        .btns { display: flex; align-items: center; justify-content: center; gap: 40px; margin-top: 25px; }
-        .c-btn { background: none; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .c-btn svg { width: 24px; height: 24px; fill: currentColor; opacity: 0.6; }
-        .c-btn:hover svg { opacity: 1; transform: scale(1.1); }
-
-        .play-main { 
-            width: 65px; height: 65px; border-radius: 50%; background: #fff; color: #000; 
-            box-shadow: 0 10px 20px rgba(255,255,255,0.1);
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: var(--spotify-black);
+            color: var(--text-primary);
+            font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        .play-main svg { width: 28px; height: 28px; fill: #000; opacity: 1; }
 
-        /* PLAYLIST STRIP */
-        .playlist-bar { width: 100%; overflow-x: auto; display: flex; gap: 12px; padding: 25px; scrollbar-width: none; }
-        .playlist-bar::-webkit-scrollbar { display: none; }
-        .item { 
-            flex: 0 0 70px; height: 70px; border-radius: 15px; cursor: pointer; 
-            object-fit: cover; opacity: 0.4; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid transparent;
+        .dynamic-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(180deg, #535353 0%, #1a1a1a 60%, #121212 100%);
+            transition: background 1s ease;
         }
-        .item.active { opacity: 1; border-color: rgba(255,255,255,0.5); transform: scale(1.1); }
 
-        .hidden { display: none; }
+        .dynamic-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top, transparent 0%, rgba(0,0,0,0.4) 100%);
+            pointer-events: none;
+        }
+
+        .app {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .icon-btn:active { transform: scale(0.92); }
+        .icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+        .header-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .header-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        .header-title {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8px 24px;
+            min-height: 0;
+        }
+
+        .album-cover-container {
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 1/1;
+            margin: 0 auto;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+            background: #2a2a2a;
+        }
+        .album-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .song-info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 28px;
+            gap: 16px;
+        }
+
+        .song-info { flex: 1; min-width: 0; }
+        .song-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: -0.4px;
+        }
+        .song-artist {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .heart-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .heart-btn:active { transform: scale(0.85); }
+        .heart-btn svg { width: 26px; height: 26px; fill: currentColor; }
+        .heart-btn.liked { color: var(--spotify-green); }
+
+        .controls-wrapper {
+            margin-top: 20px;
+        }
+
+        .progress-rail {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--text-primary);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .btns-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+        }
+
+        .c-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .c-btn:active { transform: scale(0.88); }
+        .c-btn svg { width: 26px; height: 26px; fill: currentColor; }
+
+        .c-btn.secondary { color: var(--text-secondary); }
+        .c-btn.secondary svg { width: 22px; height: 22px; }
+        .c-btn.secondary.active { color: var(--spotify-green); position: relative; }
+        .c-btn.secondary.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--spotify-green);
+        }
+
+        .play-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s ease;
+        }
+        .play-btn:active { transform: scale(0.95); }
+        .play-btn svg { fill: #000; width: 28px; height: 28px; }
+
+        .bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 22px;
+        }
+        .bottom-row .c-btn { color: var(--text-secondary); }
+        .bottom-row .c-btn svg { width: 20px; height: 20px; }
+
+        .device-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--spotify-green);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .device-pill svg { width: 16px; height: 16px; fill: currentColor; }
+
+        .playlist-section {
+            padding: 22px 0 24px;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.35) 100%);
+        }
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px 14px;
+        }
+        .list-header-title {
+            display: flex;
+            flex-direction: column;
+        }
+        .list-header-eyebrow {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+        }
+        .list-header-name {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .playlist-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 0 24px 4px;
+            scrollbar-width: none;
+        }
+        .playlist-scroll::-webkit-scrollbar { display: none; }
+
+        .list-item { flex: 0 0 96px; cursor: pointer; }
+        .item-thumb-wrap {
+            position: relative;
+            width: 96px;
+            height: 96px;
+            border-radius: 6px;
+            overflow: hidden;
+            transition: transform 0.25s ease;
+        }
+        .item-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.55;
+        }
+        .list-item.active .item-thumb { opacity: 1; }
+        .list-item.active .item-thumb-wrap { transform: scale(1.04); }
+        .item-title {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="universe-bg"></div>
+    <div class="dynamic-bg" id="bgLayer"></div>
 
     <div class="app">
         <header class="top-bar">
-            <img class="profile-img" src="https://i.ibb.co/mCMN0HHB/MG-0363.jpg">
-            <div class="creator-tag">creator <b>@Ryhavean</b></div>
+            <button class="icon-btn"><svg viewBox="0 0 24 24"><path d="M15.5 19l-7-7 7-7 1.4 1.4L11.3 12l5.6 5.6z"/></svg></button>
+            <div class="header-center">
+                <div class="header-label">Playing from playlist</div>
+                <div class="header-title">Ryhavean Project</div>
+            </div>
+            <button class="icon-btn"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
         </header>
 
         <main class="main-content">
-            <div class="glass-box">
-                <img id="albumArt" class="glass-album" src="">
-                <div class="lyrics-overlay">
-                    <div id="liveLyrics">dinlənilir...</div>
+            <div class="album-cover-container">
+                <img id="mainArt" class="album-img" alt="Cover" src="https://picsum.photos/400" />
+            </div>
+
+            <div class="song-info-row">
+                <div class="song-info">
+                    <div class="song-title" id="songTitle">Mahnı seçilməyib</div>
+                    <div class="song-artist">Ryhavean Project</div>
                 </div>
+                <button class="heart-btn" id="heartBtn">
+                    <svg id="heartOutline" viewBox="0 0 24 24"><path d="M12.1 18.55l-.1.1-.11-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.86C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05zM16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.41 2 8.5c0 3.77 3.4 6.86 8.55 11.53L12 21.35l1.45-1.32C18.6 15.36 22 12.27 22 8.5 22 5.41 19.58 3 16.5 3z"/></svg>
+                    <svg id="heartFilled" class="hidden" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35z"/></svg>
+                </button>
             </div>
 
-            <div class="song-info">
-                <div class="song-title" id="songTitle">List</div>
-            </div>
+            <div class="controls-wrapper">
+                <div class="progress-rail" id="progRail">
+                    <div class="progress-fill" id="progFill"></div>
+                </div>
+                <div class="time-labels">
+                    <span id="curTime">0:00</span>
+                    <span id="durTime">0:00</span>
+                </div>
 
-            <div class="controls">
-                <div class="progress-rail" id="progRail"><div class="progress-fill" id="progFill"></div></div>
-                <div class="btns">
-                    <button class="c-btn" id="prevBtn">
-                        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 18V6z"/></svg>
-                    </button>
-                    <button class="c-btn play-main" id="playBtn">
+                <div class="btns-row">
+                    <button class="c-btn secondary" id="shuffleBtn"><svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 11.41l-1.41 1.41 3.13 3.13L14.5 22H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></button>
+                    <button class="c-btn" id="prevBtn"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                    <button class="c-btn play-btn" id="playBtn">
                         <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                     </button>
-                    <button class="c-btn" id="nextBtn">
-                        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                    </button>
+                    <button class="c-btn" id="nextBtn"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+                    <button class="c-btn secondary" id="repeatBtn"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg></button>
                 </div>
             </div>
         </main>
 
-        <div class="playlist-bar" id="strip"></div>
+        <div class="playlist-section">
+            <div class="list-header">
+                <div class="list-header-title">
+                    <span class="list-header-eyebrow">Next up</span>
+                    <span class="list-header-name">Sıradakı mahnılar</span>
+                </div>
+            </div>
+            <div class="playlist-scroll" id="scrollContainer"></div>
+        </div>
     </div>
 
     <script>
-        const tracks = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
-        
-        // Hər mahnı üçün hər dəfə fərqli (random) şəkil linki yaradan funksiya
-        function getRandomImg() {
-            return `https://picsum.photos/400?random=${Math.random()}`;
-        }
-
-        // İlkin şəkillər siyahısını doldururuq
-        const trackImages = tracks.map(() => getRandomImg());
-        
+        const tracks = [1, 2, 3, 4, 5, 6]; // Mp3 adları: 1.mp3, 2.mp3 və s.
         let currentIdx = 0;
         const audio = new Audio();
-        
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
-        if (recognition) {
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'tr-TR';
-            recognition.onresult = (event) => {
-                let text = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    text += event.results[i][0].transcript;
-                }
-                document.getElementById('liveLyrics').textContent = text.toLowerCase();
-            };
-        }
+        const gradients = [
+            ['#1e3a5f', '#0f1d30'], ['#5f1e3a', '#300f1d'], ['#3a5f1e', '#1d300f']
+        ];
 
         function loadTrack(idx) {
-            const num = tracks[idx];
-            audio.src = `./${num}.mp3`;
-            // "Mahnı X" yerinə sadəcə "List" sabit qalsın istəyirsənsə:
-            document.getElementById('songTitle').textContent = `List`; 
-            document.getElementById('albumArt').src = trackImages[idx];
-            updatePlaylistUI();
+            audio.src = `./${tracks[idx]}.mp3`;
+            document.getElementById('songTitle').textContent = `Track ${tracks[idx]}`;
+            updateBg();
+            updateList();
         }
 
-        function updatePlaylistUI() {
-            const strip = document.getElementById('strip');
-            strip.innerHTML = '';
+        function updateBg() {
+            const [c1, c2] = gradients[currentIdx % gradients.length];
+            document.getElementById('bgLayer').style.background = `linear-gradient(180deg, ${c1} 0%, ${c2} 55%, #121212 100%)`;
+        }
+
+        function updateList() {
+            const container = document.getElementById('scrollContainer');
+            container.innerHTML = '';
             tracks.forEach((t, i) => {
-                const img = document.createElement('img');
-                // Hər bir elementin şəkli random olur
-                img.src = trackImages[i];
-                img.className = `item ${i === currentIdx ? 'active' : ''}`;
-                img.onclick = () => { currentIdx = i; loadTrack(i); audio.play(); syncPlayIcon(true); };
-                strip.appendChild(img);
+                const item = document.createElement('div');
+                item.className = `list-item ${i === currentIdx ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="item-thumb-wrap"><img class="item-thumb" src="https://picsum.photos/seed/${t}/200"></div>
+                    <div class="item-title">Track ${t}</div>
+                `;
+                item.onclick = () => { currentIdx = i; loadTrack(i); audio.play(); sync(true); };
+                container.appendChild(item);
             });
-            const activeItem = strip.querySelector('.active');
-            if(activeItem) activeItem.scrollIntoView({ behavior: 'smooth', inline: 'center' });
         }
 
-        function syncPlayIcon(playing) {
-            document.getElementById('playIcon').classList.toggle('hidden', playing);
-            document.getElementById('pauseIcon').classList.toggle('hidden', !playing);
-            if (playing && recognition) try { recognition.start(); } catch(e) {}
-            if (!playing && recognition) recognition.stop();
+        function sync(p) {
+            document.getElementById('playIcon').classList.toggle('hidden', p);
+            document.getElementById('pauseIcon').classList.toggle('hidden', !p);
         }
 
         document.getElementById('playBtn').onclick = () => {
-            if (audio.paused) {
-                audio.play();
-                syncPlayIcon(true);
-            } else {
-                audio.pause();
-                syncPlayIcon(false);
-            }
+            if (audio.paused) { audio.play(); sync(true); }
+            else { audio.pause(); sync(false); }
+        };
+
+        document.getElementById('nextBtn').onclick = () => {
+            currentIdx = (currentIdx + 1) % tracks.length;
+            loadTrack(currentIdx); audio.play(); sync(true);
         };
 
         audio.ontimeupdate = () => {
             const pct = (audio.currentTime / audio.duration) * 100;
-            document.getElementById('progFill').style.width = pct + '%';
-        };
-
-        audio.onended = () => { document.getElementById('nextBtn').click(); };
-
-        document.getElementById('nextBtn').onclick = () => { 
-            currentIdx = (currentIdx + 1) % tracks.length; 
-            loadTrack(currentIdx); 
-            audio.play(); 
-            syncPlayIcon(true);
-        };
-
-        document.getElementById('prevBtn').onclick = () => { 
-            currentIdx = (currentIdx - 1 + tracks.length) % tracks.length; 
-            loadTrack(currentIdx); 
-            audio.play(); 
-            syncPlayIcon(true);
+            document.getElementById('progFill').style.width = (pct || 0) + '%';
+            document.getElementById('curTime').textContent = Math.floor(audio.currentTime / 60) + ":" + ("0" + Math.floor(audio.currentTime % 60)).slice(-2);
         };
 
         loadTrack(0);
