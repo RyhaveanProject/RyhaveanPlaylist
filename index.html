@@ -3,861 +3,208 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Ryhavean · Ultra Play List</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600;700;800;900&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>Ryhavean · Play List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Syne:wght@800&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet" />
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; overflow: hidden; background: #000000; }
-        body {
-            font-family: 'Inter', -apple-system, 'Helvetica Neue', sans-serif;
-            color: #ffffff;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        html, body { height: 100%; overflow: hidden; background: #000; color: #fff; font-family: 'Inter', sans-serif; }
+
+        .universe-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(170deg, #000 0%, #050510 100%); }
+        .app { position: relative; z-index: 3; width: 100%; height: 100vh; display: flex; flex-direction: column; }
+
+        /* === TOP BAR === */
+        .top-bar { display: flex; align-items: center; padding: 15px 25px; z-index: 10; }
+        .profile-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); margin-right: 12px; }
+        .creator-tag { font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: rgba(255,255,255,0.4); }
+
+        /* === MAIN CONTENT === */
+        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        
+        .glass-box { 
+            width: 300px; height: 300px; border-radius: 30px; overflow: hidden; 
+            position: relative; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .glass-album { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+
+        .lyrics-overlay {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.3); padding: 20px; text-align: center;
+        }
+        #liveLyrics {
+            font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400;
+            color: rgba(255,255,255,0.9); text-transform: lowercase;
+            line-height: 1.4; transition: 0.3s;
         }
 
-        /* === DEEP SPACE BG === */
-        .universe-bg {
-            position: fixed; inset: 0; z-index: 0;
-            background: radial-gradient(ellipse 85% 65% at 25% 20%, rgba(30,20,60,0.15) 0%, transparent 70%),
-                        radial-gradient(ellipse 60% 60% at 75% 80%, rgba(15,10,40,0.10) 0%, transparent 60%),
-                        linear-gradient(170deg, #000000 0%, #020205 30%, #050510 60%, #010003 100%);
-        }
-        .particle-grid {
-            position: fixed; inset: 0; z-index: 1;
-            opacity: 0.008;
-            background-image:
-                radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.5) 0%, transparent 100%),
-                radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
-                radial-gradient(1px 1px at 50% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
-                radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.6) 0%, transparent 100%),
-                radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
-                radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.35) 0%, transparent 100%),
-                radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
-                radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,0.25) 0%, transparent 100%),
-                radial-gradient(1px 1px at 40% 45%, rgba(255,255,255,0.4) 0%, transparent 100%);
-            pointer-events: none;
-        }
+        .song-info { margin-top: 25px; text-align: center; }
+        /* "Mahnı" yerinə "List" yazıldı */
+        .song-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+        
+        /* PLAYER CONTROLS */
+        .controls { width: 100%; max-width: 350px; margin-top: 20px; }
+        .progress-rail { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; }
+        .progress-fill { height: 100%; width: 0%; background: #fff; border-radius: 2px; transition: width 0.1s linear; }
+        
+        .btns { display: flex; align-items: center; justify-content: center; gap: 40px; margin-top: 25px; }
+        .c-btn { background: none; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .c-btn svg { width: 24px; height: 24px; fill: currentColor; opacity: 0.6; }
+        .c-btn:hover svg { opacity: 1; transform: scale(1.1); }
 
-        .app {
-            position: relative; z-index: 3;
-            width: 100%; height: 100vh;
-            display: flex; flex-direction: column;
-            overflow: hidden;
+        .play-main { 
+            width: 65px; height: 65px; border-radius: 50%; background: #fff; color: #000; 
+            box-shadow: 0 10px 20px rgba(255,255,255,0.1);
         }
+        .play-main svg { width: 28px; height: 28px; fill: #000; opacity: 1; }
 
-        /* === TOP BAR — ULTRA MINIMAL === */
-        .top-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 26px; flex-shrink: 0; width: 100%; z-index: 10;
+        /* PLAYLIST STRIP */
+        .playlist-bar { width: 100%; overflow-x: auto; display: flex; gap: 12px; padding: 25px; scrollbar-width: none; }
+        .playlist-bar::-webkit-scrollbar { display: none; }
+        .item { 
+            flex: 0 0 70px; height: 70px; border-radius: 15px; cursor: pointer; 
+            object-fit: cover; opacity: 0.4; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
         }
-        .top-bar-left { display: flex; align-items: center; gap: 14px; }
+        .item.active { opacity: 1; border-color: rgba(255,255,255,0.5); transform: scale(1.1); }
 
-        .profile-ring {
-            width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
-        .profile-ring::before {
-            content: ''; position: absolute; inset: -1px; border-radius: 50%;
-            padding: 0.8px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.12) 80%, transparent 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor; mask-composite: exclude;
-        }
-        .profile-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: rgba(255,255,255,0.02); }
-
-        .creator-tag {
-            font-size: 11px; font-weight: 500; letter-spacing: 0.8px;
-            color: rgba(255,255,255,0.12);
-        }
-        .creator-tag .at {
-            font-weight: 700;
-            color: rgba(255,255,255,0.25);
-        }
-        .creator-tag .sep {
-            display: inline-block; width: 2px; height: 2px;
-            border-radius: 50%; background: rgba(255,255,255,0.08);
-            margin: 0 6px; vertical-align: middle;
-        }
-        .creator-tag .playlist-badge {
-            font-weight: 600; font-size: 9px;
-            color: rgba(255,255,255,0.08);
-            letter-spacing: 1.8px; text-transform: uppercase;
-        }
-
-        .top-bar-right { display: flex; align-items: center; gap: 6px; }
-
-        /* === iOS 26 LIQUID GLASS CAPSULE === */
-        .lg-pill {
-            height: 28px; padding: 0 12px; border-radius: 16px;
-            display: flex; align-items: center; gap: 5px; cursor: pointer;
-            background: rgba(255,255,255,0.02);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 0.4px solid rgba(255,255,255,0.04);
-            box-shadow: 0 2px 12px rgba(0,0,0,0.25), inset 0 0.3px 0.3px rgba(255,255,255,0.02);
-            color: rgba(255,255,255,0.25);
-            font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative; overflow: hidden;
-            user-select: none;
-        }
-        .lg-pill::before {
-            content: ''; position: absolute; inset: 0; border-radius: 16px;
-            background: radial-gradient(circle at 25% 20%, rgba(255,255,255,0.04) 0%, transparent 60%);
-            pointer-events: none;
-        }
-        .lg-pill:hover {
-            background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08);
-            color: rgba(255,255,255,0.65);
-            transform: scale(1.03);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.35), inset 0 0.3px 0.3px rgba(255,255,255,0.04);
-        }
-        .lg-pill:active { transform: scale(0.90); }
-        .lg-pill .icon-symbol { font-size: 10px; line-height: 1; opacity: 0.5; }
-        .lg-pill.active { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.80); border-color: rgba(255,255,255,0.10); }
-        .lg-pill.active .icon-symbol { opacity: 0.9; }
-
-        /* === MAIN — SPLIT LAYOUT === */
-        .main-content {
-            flex: 1; display: flex;
-            padding: 0 10px 8px; gap: 0;
-            overflow: hidden; min-height: 0;
-        }
-
-        /* ===== LEFT: 3D GLASS MUSIC BOX ===== */
-        .glass-box-col {
-            flex: 0 0 45%; max-width: 45%;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 4px 14px; position: relative;
-        }
-
-        /* 3D Glass Music Box */
-        .music-box-3d {
-            position: relative;
-            width: 100%; max-width: 380px;
-            aspect-ratio: 1/1;
-            perspective: 1000px;
-            margin-bottom: 12px;
-        }
-        .glass-cube {
-            width: 100%; height: 100%;
-            border-radius: 28px;
-            position: relative;
-            overflow: hidden;
-            background: radial-gradient(circle at 25% 30%, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.20) 40%, transparent 60%),
-                        linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.15) 100%);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
-            border: 0.3px solid rgba(255,255,255,0.04);
-            box-shadow:
-                0 20px 80px -20px rgba(0,0,0,0.8),
-                inset 0 0.5px 0.5px rgba(255,255,255,0.03),
-                0 0 80px rgba(80,60,180,0.03),
-                inset 0 0 60px rgba(120,80,200,0.02);
-            transform-style: preserve-3d;
-            transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.8s ease;
-        }
-        .glass-cube::before {
-            content: ''; position: absolute; inset: 0; border-radius: 28px;
-            background: radial-gradient(ellipse 80% 40% at 20% 15%, rgba(255,255,255,0.08) 0%, transparent 50%),
-                        radial-gradient(ellipse 60% 30% at 80% 85%, rgba(150,120,255,0.03) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        /* Floating glow edge — ray-tracing refractions */
-        .glass-cube::after {
-            content: ''; position: absolute; inset: -2px; border-radius: 30px;
-            background: linear-gradient(145deg,
-                rgba(255,255,255,0.02) 0%, transparent 20%, transparent 50%,
-                rgba(180,160,255,0.02) 60%, transparent 80%, rgba(255,255,255,0.01) 100%);
-            mask: radial-gradient(ellipse 70% 70% at 30% 25%, black 20%, transparent 70%);
-            -webkit-mask: radial-gradient(ellipse 70% 70% at 30% 25%, black 20%, transparent 70%);
-            pointer-events: none;
-        }
-        .glass-cube.playing {
-            transform: rotateX(2deg) rotateY(-4deg) scale(1.01);
-            box-shadow:
-                0 25px 100px -18px rgba(0,0,0,0.9),
-                inset 0 0.5px 0.5px rgba(255,255,255,0.04),
-                0 0 100px rgba(100,80,200,0.04),
-                inset 0 0 80px rgba(140,100,255,0.03);
-        }
-        /* Album art inside glass */
-        .glass-album {
-            width: 100%; height: 100%; border-radius: 28px;
-            object-fit: cover; opacity: 0.7;
-            mix-blend-mode: luminosity;
-            transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            filter: saturate(0.4) brightness(0.7) contrast(1.2);
-        }
-        .glass-cube.playing .glass-album {
-            opacity: 0.85;
-            transform: scale(1.02);
-            filter: saturate(0.6) brightness(0.8) contrast(1.15);
-        }
-        /* Inner glass reflections */
-        .glass-reflect {
-            position: absolute; inset: 0; border-radius: 28px;
-            background: linear-gradient(160deg,
-                rgba(255,255,255,0.03) 0%, transparent 25%, transparent 50%,
-                rgba(255,255,255,0.01) 60%, transparent 75%, rgba(255,255,255,0.02) 100%);
-            pointer-events: none;
-            mix-blend-mode: screen;
-        }
-        .glass-reflect-2 {
-            position: absolute; inset: 0; border-radius: 28px;
-            background: radial-gradient(ellipse 100% 60% at 0% 100%, rgba(180,160,255,0.02) 0%, transparent 50%);
-            pointer-events: none;
-            mix-blend-mode: overlay;
-        }
-        /* Light streak animation */
-        .light-streak {
-            position: absolute; inset: 0; border-radius: 28px;
-            background: linear-gradient(105deg,
-                transparent 35%, rgba(255,255,255,0.01) 45%, rgba(255,255,255,0.02) 48%,
-                rgba(200,180,255,0.01) 50%, transparent 55%);
-            background-size: 300% 100%;
-            animation: streakMove 6s ease-in-out infinite;
-            pointer-events: none;
-            mix-blend-mode: screen;
-        }
-        @keyframes streakMove {
-            0%, 100% { background-position: 200% 0; }
-            50% { background-position: -100% 0; }
-        }
-
-        /* === SONG TITLE (below box) === */
-        .song-meta-box {
-            width: 100%; max-width: 380px;
-            text-align: center; padding: 0 4px;
-        }
-        .song-title {
-            font-family: 'Syne', 'Inter', sans-serif;
-            font-size: 20px; font-weight: 800; line-height: 1.2;
-            letter-spacing: -0.02em;
-            color: rgba(255,255,255,0.65);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            filter: drop-shadow(0 0 20px rgba(255,255,255,0.01));
-        }
-        .song-artist {
-            font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.08);
-            letter-spacing: 2px; margin-top: 2px; text-transform: uppercase;
-        }
-
-        /* === PROGRESS BAR (ultra thin) === */
-        .player-controls { width: 100%; max-width: 380px; margin-top: 10px; }
-        .progress-rail {
-            width: 100%; height: 2px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 2px; cursor: pointer; position: relative;
-            transition: height 0.15s ease;
-        }
-        .progress-rail:hover { height: 3px; }
-        .progress-fill {
-            height: 100%; width: 0%; border-radius: 2px;
-            background: linear-gradient(90deg, rgba(255,255,255,0.30) 0%, rgba(200,180,255,0.15) 50%, rgba(255,255,255,0.20) 100%);
-            background-size: 200% 100%; animation: shimmerText 4s ease-in-out infinite;
-            position: relative;
-        }
-        .progress-fill::after {
-            content: ''; position: absolute; right: -3px; top: 50%;
-            transform: translateY(-50%); width: 6px; height: 6px;
-            border-radius: 50%; background: rgba(255,255,255,0.15);
-            opacity: 0; transition: opacity 0.2s;
-        }
-        .progress-rail:hover .progress-fill::after { opacity: 1; }
-
-        .time-row {
-            display: flex; justify-content: space-between;
-            font-size: 10px; font-weight: 600; margin-top: 4px;
-            color: rgba(255,255,255,0.06); font-variant-numeric: tabular-nums;
-        }
-
-        @keyframes shimmerText {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        /* === iOS 26 LIQUID GLASS CONTROLS (ultra transparent) === */
-        .ctrl-row { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 10px; }
-
-        .ctrl-btn {
-            background: none; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            position: relative; color: rgba(255,255,255,0.12);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .ctrl-btn:hover { color: rgba(255,255,255,0.45); transform: scale(1.06); }
-        .ctrl-btn:active { transform: scale(0.84); }
-
-        /* iOS 26 Skip — ultra sheer */
-        .ctrl-btn--skip {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: rgba(255,255,255,0.02);
-            backdrop-filter: blur(40px) saturate(160%);
-            -webkit-backdrop-filter: blur(40px) saturate(160%);
-            border: 0.3px solid rgba(255,255,255,0.03);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15), inset 0 0.3px 0.3px rgba(255,255,255,0.02);
-            color: rgba(255,255,255,0.12);
-            overflow: hidden;
-        }
-        .ctrl-btn--skip::before {
-            content: ''; position: absolute; inset: 0; border-radius: 50%;
-            background: radial-gradient(circle at 25% 20%, rgba(255,255,255,0.04) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        .ctrl-btn--skip:hover {
-            background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06);
-            color: rgba(255,255,255,0.55);
-            box-shadow: 0 4px 18px rgba(0,0,0,0.25), inset 0 0.3px 0.3px rgba(255,255,255,0.04);
-        }
-        .ctrl-btn--skip:active { transform: scale(0.82); }
-
-        /* iOS 26 Play — Big Liquid Glass */
-        .ctrl-btn--play {
-            width: 50px; height: 50px; border-radius: 50%;
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(50px) saturate(200%);
-            -webkit-backdrop-filter: blur(50px) saturate(200%);
-            border: 0.4px solid rgba(255,255,255,0.04);
-            box-shadow: 0 6px 24px rgba(0,0,0,0.25), inset 0 0.3px 0.3px rgba(255,255,255,0.03);
-            color: rgba(255,255,255,0.30);
-            overflow: hidden;
-        }
-        .ctrl-btn--play::before {
-            content: ''; position: absolute; inset: 0; border-radius: 50%;
-            background: radial-gradient(circle at 25% 20%, rgba(255,255,255,0.06) 0%, transparent 55%);
-            pointer-events: none;
-        }
-        .ctrl-btn--play:hover {
-            background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.07);
-            color: rgba(255,255,255,0.70);
-            box-shadow: 0 10px 36px rgba(0,0,0,0.35), inset 0 0.3px 0.5px rgba(255,255,255,0.05);
-            transform: scale(1.05);
-        }
-        .ctrl-btn--play:active { transform: scale(0.88); }
-
-        /* ===== RIGHT: LIVE LYRICS ===== */
-        .lyrics-col {
-            flex: 1; min-width: 0;
-            display: flex; flex-direction: column;
-            justify-content: center;
-            padding: 4px 20px 4px 10px;
-            overflow: hidden;
-        }
-        .lyrics-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding-bottom: 8px; flex-shrink: 0;
-        }
-        .lyrics-header h2 {
-            font-size: 9px; font-weight: 600; letter-spacing: 2px;
-            color: rgba(255,255,255,0.04); text-transform: uppercase;
-        }
-        .lyrics-header .status-dot {
-            width: 4px; height: 4px; border-radius: 50%;
-            background: rgba(255,255,255,0.04);
-            animation: pulseDot 2s ease-in-out infinite;
-        }
-        @keyframes pulseDot {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-
-        .lyrics-scroll {
-            flex: 1; overflow-y: auto; overflow-x: hidden;
-            padding-right: 8px; min-height: 0;
-            scroll-behavior: smooth;
-        }
-        ::-webkit-scrollbar { width: 1px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.02); border-radius: 4px; }
-
-        .lyric-line {
-            font-family: 'Syne', 'Inter', sans-serif;
-            font-size: 28px; font-weight: 800;
-            line-height: 1.4; letter-spacing: -0.02em;
-            padding: 10px 0 10px 0;
-            color: rgba(255,255,255,0.02);
-            transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-            cursor: default;
-            border-left: 1.5px solid transparent;
-            padding-left: 10px;
-        }
-        .lyric-line:hover {
-            color: rgba(255,255,255,0.04);
-        }
-        .lyric-line.active {
-            color: rgba(255,255,255,0.45);
-            border-left-color: rgba(255,255,255,0.04);
-            font-size: 32px;
-            filter: drop-shadow(0 0 14px rgba(255,255,255,0.01));
-        }
-        .lyric-line.past {
-            color: rgba(255,255,255,0.03);
-            font-size: 22px;
-        }
-        .lyric-line.future {
-            color: rgba(255,255,255,0.015);
-            font-size: 22px;
-        }
-
-        /* === HIDE UNUSED === */
-        .hidden { display: none !important; }
-
-        /* === RESPONSIVE === */
-        @media (max-width: 900px) {
-            .main-content { flex-direction: column; padding: 0 12px 4px; }
-            .glass-box-col { flex: 0 0 auto; max-width: 100%; padding: 0; }
-            .music-box-3d { max-width: 240px; margin-bottom: 4px; }
-            .lyrics-col { flex: 1; padding: 2px 4px; }
-            .lyric-line { font-size: 22px; }
-            .lyric-line.active { font-size: 26px; }
-            .lyric-line.past, .lyric-line.future { font-size: 18px; }
-            .top-bar { padding: 10px 14px; }
-            .profile-ring { width: 30px; height: 30px; }
-            .creator-tag { font-size: 10px; }
-            .song-title { font-size: 17px; }
-            .ctrl-btn--play { width: 44px; height: 44px; }
-            .ctrl-btn--skip { width: 30px; height: 30px; }
-            .ctrl-row { gap: 14px; }
-        }
-        @media (max-width: 420px) {
-            .music-box-3d { max-width: 160px; }
-            .lyric-line { font-size: 18px; }
-            .lyric-line.active { font-size: 22px; }
-            .lyric-line.past, .lyric-line.future { font-size: 15px; }
-            .song-title { font-size: 15px; }
-            .ctrl-btn--play { width: 38px; height: 38px; }
-            .ctrl-btn--skip { width: 26px; height: 26px; }
-            .ctrl-row { gap: 10px; }
-        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- DEEP SPACE BG -->
     <div class="universe-bg"></div>
-    <div class="particle-grid" aria-hidden="true"></div>
 
-    <!-- APP -->
     <div class="app">
-
-        <!-- TOP BAR — Ultra Minimal -->
         <header class="top-bar">
-            <div class="top-bar-left">
-                <div class="profile-ring">
-                    <img class="profile-img"
-                         src="https://i.ibb.co/mCMN0HHB/MG-0363.jpg"
-                         alt="Profile" />
-                </div>
-                <div class="creator-tag">
-                    creator <span class="at">@Ryhavean</span>
-                    <span class="sep"></span>
-                    <span class="playlist-badge">✦ Play List</span>
-                </div>
-            </div>
-            <div class="top-bar-right">
-                <!-- Shuffle & Repeat — iOS 26 Liquid Glass Pill butonlar sade ve işlevsel -->
-                <button class="lg-pill" id="shuffleBtn">
-                    <span class="icon-symbol">↻</span>
-                </button>
-                <button class="lg-pill" id="repeatBtn">
-                    <span class="icon-symbol">↺</span>
-                </button>
-            </div>
+            <img class="profile-img" src="https://i.ibb.co/mCMN0HHB/MG-0363.jpg">
+            <div class="creator-tag">creator <b>@Ryhavean</b></div>
         </header>
 
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-
-            <!-- LEFT: 3D GLASS MUSIC BOX -->
-            <section class="glass-box-col">
-                <div class="music-box-3d">
-                    <div class="glass-cube" id="glassCube">
-                        <img class="glass-album" id="albumArt"
-                             src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop"
-                             alt="Album Art" />
-                        <div class="glass-reflect"></div>
-                        <div class="glass-reflect-2"></div>
-                        <div class="light-streak"></div>
-                    </div>
+        <main class="main-content">
+            <div class="glass-box">
+                <img id="albumArt" class="glass-album" src="">
+                <div class="lyrics-overlay">
+                    <div id="liveLyrics">dinlənilir...</div>
                 </div>
+            </div>
 
-                <div class="song-meta-box">
-                    <div class="song-title" id="songTitle">Ryhavean</div>
-                    <div class="song-artist" id="songArtist">PLAY LIST</div>
+            <div class="song-info">
+                <div class="song-title" id="songTitle">List</div>
+            </div>
+
+            <div class="controls">
+                <div class="progress-rail" id="progRail"><div class="progress-fill" id="progFill"></div></div>
+                <div class="btns">
+                    <button class="c-btn" id="prevBtn">
+                        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 18V6z"/></svg>
+                    </button>
+                    <button class="c-btn play-main" id="playBtn">
+                        <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="pauseIcon" class="hidden" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    <button class="c-btn" id="nextBtn">
+                        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
                 </div>
+            </div>
+        </main>
 
-                <div class="player-controls">
-                    <div class="progress-rail" id="progressRail">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="time-row">
-                        <span id="currentTime">0:00</span>
-                        <span id="totalTime">0:00</span>
-                    </div>
-
-                    <!-- iOS 26 Liquid Glass Controls — ultra transparent -->
-                    <div class="ctrl-row">
-                        <button class="ctrl-btn ctrl-btn--skip" id="prevBtn" aria-label="Previous">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="19 20 9 12 19 4 19 20" />
-                                <line x1="5" y1="19" x2="5" y2="5" />
-                            </svg>
-                        </button>
-
-                        <button class="ctrl-btn ctrl-btn--play" id="playBtn" aria-label="Play/Pause">
-                            <svg id="playIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <polygon points="8,5 19,12 8,19" />
-                            </svg>
-                            <svg id="pauseIcon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <rect x="6" y="4" width="4" height="16" rx="1" />
-                                <rect x="14" y="4" width="4" height="16" rx="1" />
-                            </svg>
-                        </button>
-
-                        <button class="ctrl-btn ctrl-btn--skip" id="nextBtn" aria-label="Next">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="5 4 15 12 5 20 5 4" />
-                                <line x1="19" y1="5" x2="19" y2="19" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- RIGHT: LIVE LYRICS -->
-            <aside class="lyrics-col">
-                <div class="lyrics-header">
-                    <h2>✦ Live Lyrics</h2>
-                    <span class="status-dot"></span>
-                </div>
-                <div class="lyrics-scroll" id="lyricsScroll">
-                    <div id="lyricsContainer"></div>
-                </div>
-            </aside>
-        </div>
+        <div class="playlist-bar" id="strip"></div>
     </div>
 
     <script>
-        /* ================================================================
-           🎵  TRACKS — GitHub dosyalarınla birebir eşleşir
-               7 numarası yok (atlanmış)
-           ================================================================ */
-        const trackNumbers = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
-
-        /* === STATE === */
-        let currentIndex = 0;
-        let isPlaying = false;
-        let isSeeking = false;
-        let shuffleOn = false;
-        let repeatOn = false;
-
-        const audio = new Audio();
-
-        /* === DOM REFS === */
-        const albumArtEl    = document.getElementById('albumArt');
-        const glassCube     = document.getElementById('glassCube');
-        const songTitleEl   = document.getElementById('songTitle');
-        const songArtistEl  = document.getElementById('songArtist');
-        const currentTimeEl = document.getElementById('currentTime');
-        const totalTimeEl   = document.getElementById('totalTime');
-        const progressFill  = document.getElementById('progressFill');
-        const progressRail  = document.getElementById('progressRail');
-        const playBtn       = document.getElementById('playBtn');
-        const playIcon      = document.getElementById('playIcon');
-        const pauseIcon     = document.getElementById('pauseIcon');
-        const prevBtn       = document.getElementById('prevBtn');
-        const nextBtn       = document.getElementById('nextBtn');
-        const shuffleBtn    = document.getElementById('shuffleBtn');
-        const repeatBtn     = document.getElementById('repeatBtn');
-        const lyricsScroll  = document.getElementById('lyricsScroll');
-        const lyricsContainer = document.getElementById('lyricsContainer');
-
-        /* === ALBUM ART POOL === */
-        const albumArtPool = [
-            'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1614851099511-773084f6911d?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1505144808419-1957a94ca61e?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1518837695-5002083ca61e?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1470071459604-7b8ec44ffd0c?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1614149162883-504ce4d13909?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400&h=400&fit=crop'
-        ];
-
-        function getAlbumArt(index) {
-            return albumArtPool[index % albumArtPool.length];
+        const tracks = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+        
+        // Hər mahnı üçün hər dəfə fərqli (random) şəkil linki yaradan funksiya
+        function getRandomImg() {
+            return `https://picsum.photos/400?random=${Math.random()}`;
         }
 
-        /* === LYRICS DATA (canlı, her track için farklı) === */
-        const lyricsDatabase = {
-            default: [
-                { time: 0, text: "🎵 Ryhavean" },
-                { time: 3, text: "Darkness fades into sound" },
-                { time: 6, text: "Every beat brings us alive" },
-                { time: 9, text: "Lost in the rhythm now" },
-                { time: 12, text: "Feel the pulse, feel the drive" },
-                { time: 15, text: "Stars align with every chord" },
-                { time: 18, text: "This moment is forever ours" },
-                { time: 21, text: "🎵 Ryhavean" },
-                { time: 24, text: "Beyond the silence we found" },
-                { time: 27, text: "A universe inside the sound" },
-                { time: 30, text: "Let the music take control" },
-                { time: 33, text: "We are infinite tonight" },
-                { time: 36, text: "🎵 Ryhavean" }
-            ]
+        // İlkin şəkillər siyahısını doldururuq
+        const trackImages = tracks.map(() => getRandomImg());
+        
+        let currentIdx = 0;
+        const audio = new Audio();
+        
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+        if (recognition) {
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'tr-TR';
+            recognition.onresult = (event) => {
+                let text = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    text += event.results[i][0].transcript;
+                }
+                document.getElementById('liveLyrics').textContent = text.toLowerCase();
+            };
+        }
+
+        function loadTrack(idx) {
+            const num = tracks[idx];
+            audio.src = `./${num}.mp3`;
+            // "Mahnı X" yerinə sadəcə "List" sabit qalsın istəyirsənsə:
+            document.getElementById('songTitle').textContent = `List`; 
+            document.getElementById('albumArt').src = trackImages[idx];
+            updatePlaylistUI();
+        }
+
+        function updatePlaylistUI() {
+            const strip = document.getElementById('strip');
+            strip.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const img = document.createElement('img');
+                // Hər bir elementin şəkli random olur
+                img.src = trackImages[i];
+                img.className = `item ${i === currentIdx ? 'active' : ''}`;
+                img.onclick = () => { currentIdx = i; loadTrack(i); audio.play(); syncPlayIcon(true); };
+                strip.appendChild(img);
+            });
+            const activeItem = strip.querySelector('.active');
+            if(activeItem) activeItem.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        }
+
+        function syncPlayIcon(playing) {
+            document.getElementById('playIcon').classList.toggle('hidden', playing);
+            document.getElementById('pauseIcon').classList.toggle('hidden', !playing);
+            if (playing && recognition) try { recognition.start(); } catch(e) {}
+            if (!playing && recognition) recognition.stop();
+        }
+
+        document.getElementById('playBtn').onclick = () => {
+            if (audio.paused) {
+                audio.play();
+                syncPlayIcon(true);
+            } else {
+                audio.pause();
+                syncPlayIcon(false);
+            }
         };
 
-        let currentLyrics = [...lyricsDatabase.default];
+        audio.ontimeupdate = () => {
+            const pct = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('progFill').style.width = pct + '%';
+        };
 
-        /* === BUILD LYRICS === */
-        function buildLyrics() {
-            lyricsContainer.innerHTML = '';
-            currentLyrics.forEach((line, i) => {
-                const div = document.createElement('div');
-                div.className = 'lyric-line future';
-                div.textContent = line.text;
-                div.dataset.index = i;
-                div.dataset.time = line.time;
-                lyricsContainer.appendChild(div);
-            });
-        }
+        audio.onended = () => { document.getElementById('nextBtn').click(); };
 
-        /* === UPDATE LYRICS === */
-        function updateLyrics(currentTime) {
-            const lines = lyricsContainer.children;
-            let activeIndex = -1;
+        document.getElementById('nextBtn').onclick = () => { 
+            currentIdx = (currentIdx + 1) % tracks.length; 
+            loadTrack(currentIdx); 
+            audio.play(); 
+            syncPlayIcon(true);
+        };
 
-            for (let i = currentLyrics.length - 1; i >= 0; i--) {
-                if (currentTime >= currentLyrics[i].time) {
-                    activeIndex = i;
-                    break;
-                }
-            }
+        document.getElementById('prevBtn').onclick = () => { 
+            currentIdx = (currentIdx - 1 + tracks.length) % tracks.length; 
+            loadTrack(currentIdx); 
+            audio.play(); 
+            syncPlayIcon(true);
+        };
 
-            for (let i = 0; i < lines.length; i++) {
-                lines[i].className = 'lyric-line';
-                if (i < activeIndex) {
-                    lines[i].classList.add('past');
-                } else if (i === activeIndex) {
-                    lines[i].classList.add('active');
-                    // scroll into view
-                    if (activeIndex >= 0) {
-                        lines[activeIndex].scrollIntoView({ block: 'center', behavior: 'smooth' });
-                    }
-                } else {
-                    lines[i].classList.add('future');
-                }
-            }
-        }
-
-        /* === LOAD TRACK === */
-        function loadTrack(index) {
-            if (index < 0 || index >= trackNumbers.length) return;
-
-            const wasPlaying = isPlaying;
-            if (isPlaying) audio.pause();
-
-            currentIndex = index;
-            const trackNum = trackNumbers[index];
-            const trackName = 'Track ' + trackNum;
-
-            songTitleEl.textContent = trackName;
-            songArtistEl.textContent = 'PLAY LIST';
-
-            // Album art
-            albumArtEl.style.opacity = '0';
-            setTimeout(() => {
-                albumArtEl.src = getAlbumArt(index);
-                albumArtEl.style.opacity = '0.7';
-            }, 200);
-
-            // Load audio
-            audio.src = 'https://raw.githubusercontent.com/your-username/your-repo/main/' + trackNum + '.mp3';
-            // ⚡ DEĞİŞTİR: your-username → GitHub kullanıcı adın
-            //    your-repo → repo adın
-
-            audio.load();
-
-            progressFill.style.width = '0%';
-            currentTimeEl.textContent = '0:00';
-            totalTimeEl.textContent = '0:00';
-
-            // Lyrics reset
-            currentLyrics = lyricsDatabase.default.map((l, i) => ({
-                ...l,
-                text: i === 0
-                    ? '🎵 ' + trackName
-                    : l.text.replace(/🎵.*/, '')
-            }));
-            // Ensure first line shows track name
-            currentLyrics[0].text = '🎵 ' + trackName;
-            buildLyrics();
-            updateLyrics(0);
-
-            if (wasPlaying) {
-                audio.play().catch(() => {});
-            }
-        }
-
-        /* === PLAY / PAUSE === */
-        function play() {
-            if (!audio.src || audio.src === '') {
-                loadTrack(currentIndex);
-            }
-            audio.play().then(() => {
-                isPlaying = true;
-                playIcon.classList.add('hidden');
-                pauseIcon.classList.remove('hidden');
-                glassCube.classList.add('playing');
-            }).catch(() => {
-                isPlaying = false;
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-                glassCube.classList.remove('playing');
-            });
-        }
-
-        function pauseTrack() {
-            audio.pause();
-            isPlaying = false;
-            playIcon.classList.remove('hidden');
-            pauseIcon.classList.add('hidden');
-            glassCube.classList.remove('playing');
-        }
-
-        function togglePlay() {
-            isPlaying ? pauseTrack() : play();
-        }
-
-        /* === NAVIGATION === */
-        function nextTrack() {
-            if (shuffleOn) {
-                let next;
-                do { next = Math.floor(Math.random() * trackNumbers.length); }
-                while (next === currentIndex && trackNumbers.length > 1);
-                loadTrack(next);
-            } else {
-                loadTrack((currentIndex + 1) % trackNumbers.length);
-            }
-            if (isPlaying) audio.play().catch(() => {});
-            else play();
-        }
-
-        function prevTrack() {
-            if (audio.currentTime > 3) {
-                audio.currentTime = 0;
-                return;
-            }
-            loadTrack((currentIndex - 1 + trackNumbers.length) % trackNumbers.length);
-            if (isPlaying) audio.play().catch(() => {});
-            else play();
-        }
-
-        /* === EVENT BINDINGS === */
-        playBtn.addEventListener('click', togglePlay);
-        prevBtn.addEventListener('click', prevTrack);
-        nextBtn.addEventListener('click', nextTrack);
-
-        document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-            if (e.code === 'ArrowRight') nextTrack();
-            if (e.code === 'ArrowLeft') prevTrack();
-        });
-
-        /* === AUDIO EVENTS === */
-        audio.addEventListener('loadedmetadata', () => {
-            totalTimeEl.textContent = formatTime(audio.duration);
-        });
-
-        audio.addEventListener('timeupdate', () => {
-            if (isSeeking) return;
-            if (audio.duration) {
-                const pct = (audio.currentTime / audio.duration) * 100;
-                progressFill.style.width = Math.min(pct, 100) + '%';
-                currentTimeEl.textContent = formatTime(audio.currentTime);
-                updateLyrics(audio.currentTime);
-            }
-        });
-
-        audio.addEventListener('ended', () => {
-            if (repeatOn) {
-                audio.currentTime = 0;
-                audio.play().catch(() => {});
-            } else {
-                nextTrack();
-            }
-        });
-
-        audio.addEventListener('error', () => {
-            songTitleEl.textContent = '⚠️ Check: ' + trackNumbers[currentIndex] + '.mp3';
-        });
-
-        /* === SEEK === */
-        function handleSeek(e) {
-            const rect = progressRail.getBoundingClientRect();
-            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
-            const pct = Math.max(0, Math.min(1, x / rect.width));
-            if (audio.duration) {
-                audio.currentTime = pct * audio.duration;
-                progressFill.style.width = (pct * 100) + '%';
-                currentTimeEl.textContent = formatTime(audio.currentTime);
-                updateLyrics(audio.currentTime);
-            }
-        }
-
-        progressRail.addEventListener('mousedown', (e) => { isSeeking = true; handleSeek(e); });
-        window.addEventListener('mousemove', (e) => { if (isSeeking) handleSeek(e); });
-        window.addEventListener('mouseup', () => { isSeeking = false; });
-
-        progressRail.addEventListener('touchstart', (e) => { isSeeking = true; handleSeek(e); }, { passive: true });
-        progressRail.addEventListener('touchmove', (e) => { if (isSeeking) handleSeek(e); }, { passive: true });
-        progressRail.addEventListener('touchend', () => { isSeeking = false; }, { passive: true });
-
-        /* === SHUFFLE / REPEAT === */
-        shuffleBtn.addEventListener('click', function() {
-            shuffleOn = !shuffleOn;
-            this.classList.toggle('active', shuffleOn);
-        });
-
-        repeatBtn.addEventListener('click', function() {
-            repeatOn = !repeatOn;
-            this.classList.toggle('active', repeatOn);
-            audio.loop = repeatOn;
-        });
-
-        /* === HELPERS === */
-        function formatTime(s) {
-            if (!s || isNaN(s)) return '0:00';
-            const m = Math.floor(s / 60);
-            const sec = Math.floor(s % 60);
-            return m + ':' + (sec < 10 ? '0' : '') + sec;
-        }
-
-        /* === INIT === */
-        buildLyrics();
         loadTrack(0);
-
-        console.log('%c✦ Ryhavean — Ultra Cinematic ✦', 'font-size:20px; font-weight:800; color:#fff; background:#000; padding:8px 16px;');
-        console.log('%c3D Glass · Live Lyrics · iOS 26 Liquid Glass', 'font-size:13px; color:#888;');
     </script>
 </body>
 </html>
